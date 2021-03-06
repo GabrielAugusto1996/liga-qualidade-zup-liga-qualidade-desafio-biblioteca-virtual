@@ -97,10 +97,9 @@ public class Cenario6 {
 
 		Set<DadosEmprestimo> emprestimos = Set.of(pedidoEmprestimo1,
 				pedidoEmprestimo2);
-		
-		if(emprestimos.size() != 2) {
-			throw new IllegalStateException("Alberto com certeza montou o cenário errado");
-		}
+
+		Assertions.assertEquals(2, emprestimos.size(), "Alberto com certeza montou o cenário errado");
+
 		
 		Set<DadosDevolucao> devolucoes = Set.of();
 
@@ -114,17 +113,16 @@ public class Cenario6 {
 				.noneMatch(r -> r.getMomentoDevolucao().isPresent()));
 		Assertions.assertEquals(1, resultados.size());
 
-		List<Integer> idsUsuariosRetornados = resultados.stream()
-				.map(r -> r.idUsuario).collect(Collectors.toList());
-		List<Integer> idsUsuariosEsperados = usuarios.stream()
-				.map(u -> u.idUsuario).collect(Collectors.toList());
+		Set<Integer> idsUsuariosRetornados = resultados.stream()
+				.map(r -> r.idUsuario).collect(Collectors.toSet());
+		Set<Integer> idsUsuariosEsperados = usuarios.stream()
+				.map(u -> u.idUsuario).collect(Collectors.toSet());
 		Assertions.assertEquals(idsUsuariosEsperados, idsUsuariosRetornados);
 		
-		List<LocalDate> datasPrevistasDevolucaoRetornadas = resultados.stream()
-				.map(r -> r.dataPrevistaDevolucao).collect(Collectors.toList());
+		Set<LocalDate> datasPrevistasDevolucaoRetornadas = resultados.stream()
+				.map(r -> r.dataPrevistaDevolucao).collect(Collectors.toSet());
 		LocalDate previsaoEntrega = hoje.plusDays(10);
-		List<LocalDate> datasPrevistasEsperadas = List.of(previsaoEntrega,
-				previsaoEntrega, previsaoEntrega);
+		Set<LocalDate> datasPrevistasEsperadas = Set.of(previsaoEntrega);
 		Assertions.assertEquals(datasPrevistasEsperadas,
 				datasPrevistasDevolucaoRetornadas);
 	}

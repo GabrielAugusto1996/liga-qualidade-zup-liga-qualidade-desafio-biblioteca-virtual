@@ -1,5 +1,6 @@
 package br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique;
 
+import br.com.zup.edu.ligaqualidade.desafiobiblioteca.DadosDevolucao;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.DadosEmprestimo;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.EmprestimoConcedido;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.exceptions.EmprestimoBusinessException;
@@ -14,16 +15,27 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.time.LocalDate.now;
+import static java.util.Objects.nonNull;
 
 public class EmprestimoHandler {
-    final Set<DadosEmprestimo> emprestimos;
-    final Set<DadosUsuario> usuarios;
-    final Set<DadosExemplar> exemplares;
+    Set<DadosEmprestimo> emprestimos;
+    Set<DadosUsuario> usuarios;
+    Set<DadosExemplar> exemplares;
+    LocalDate dataParaSerConsideradaNaExpiracao;
+    Set<DadosDevolucao> devolucoes;
 
-    public EmprestimoHandler(final Set<DadosUsuario> usuarios, final Set<DadosEmprestimo> emprestimos, final Set<DadosExemplar> exemplares) {
+    public EmprestimoHandler(
+            Set<DadosUsuario> usuarios,
+            Set<DadosEmprestimo> emprestimos,
+            Set<DadosExemplar> exemplares,
+            LocalDate dataParaSerConsideradaNaExpiracao,
+            Set<DadosDevolucao> devolucoes
+    ) {
         this.usuarios = usuarios;
         this.emprestimos = emprestimos;
         this.exemplares = exemplares;
+        this.dataParaSerConsideradaNaExpiracao = dataParaSerConsideradaNaExpiracao;
+        this.devolucoes = devolucoes;
     }
 
     public Set<EmprestimoConcedido> concedeEmprestimos(){
@@ -31,6 +43,7 @@ public class EmprestimoHandler {
 
         emprestimos.forEach((DadosEmprestimo emprestimo) -> {
             try {
+
                 DadosUsuario usuario = DadosUsuarioFilter.findById(usuarios, emprestimo.idUsuario);
                 DadosExemplar exemplar = DadosExemplarFilter.findByIdAndTipoExemplar(exemplares, emprestimo.idLivro, emprestimo.tipoExemplar);
 
@@ -45,7 +58,28 @@ public class EmprestimoHandler {
             }
         });
 
+        this.devolverLivros(emprestimosConcedidos);
         return emprestimosConcedidos;
+    }
+
+    //TODO: Fazer o filtro de forma correta e melhorar o custo do código (Branch de código)
+    private void devolverLivros(final Set<EmprestimoConcedido> emprestimosConcedidos) {
+        for (final DadosDevolucao dadosDevolucao : devolucoes) {
+            final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
+                    .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == dadosEmprestimo.idUsuario)
+                    .findFirst().orElse(null);
+
+            if (nonNull(emprestimoParaDevolver)) {
+                final DadosUsuario usuario = usuarios.stream()
+                        .filter(dadosUsuario -> dadosUsuario.idUsuario == emprestimoParaDevolver.idUsuario)
+                        .findFirst()
+                        .orElse(null);
+
+                if (nonNull(usuario)){
+                    emprestimoParaDevolver.registraDevolucao();
+                }
+            }
+        }
     }
 
     private LocalDate calculateDataPrevistaDevolucao(final int tempo) {

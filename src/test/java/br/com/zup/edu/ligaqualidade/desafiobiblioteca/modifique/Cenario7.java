@@ -104,11 +104,9 @@ public class Cenario7 {
 		Set<DadosEmprestimo> emprestimos = Set.of(pedidoEmprestimo1,
 				pedidoEmprestimo2, pedidoEmprestimo3, pedidoEmprestimo4,
 				pedidoEmprestimo5);
-		
-		if(emprestimos.size() != 5) {
-			throw new IllegalStateException("Alberto com certeza montou o cenário errado");
-		}
-		
+
+		Assertions.assertEquals(5, emprestimos.size(), "Alberto com certeza montou o cenário errado");
+
 		LocalDate hoje = LocalDate.now();
 		Set<DadosDevolucao> devolucoes = Set.of(new DadosDevolucao(1, hoje.plusDays(5)));
 
@@ -122,17 +120,17 @@ public class Cenario7 {
 		
 		Assertions.assertEquals(5, resultados.size());
 
-		List<Integer> idsExemplaresRetornados = resultados.stream()
-				.map(r -> r.idExemplar).collect(Collectors.toList());
-		List<Integer> idsExemplaresEsperados = exemplares.stream()
-				.map(e -> e.idExemplar).collect(Collectors.toList());
+		Set<Integer> idsExemplaresRetornados = resultados.stream()
+				.map(r -> r.idExemplar).collect(Collectors.toSet());
+		Set<Integer> idsExemplaresEsperados = exemplares.stream()
+				.map(e -> e.idExemplar).collect(Collectors.toSet());
 		Assertions.assertEquals(idsExemplaresEsperados,
 				idsExemplaresRetornados);
 
-		List<Integer> idsUsuariosRetornados = resultados.stream()
-				.map(r -> r.idUsuario).collect(Collectors.toList());
-		List<Integer> idsUsuariosEsperados = usuarios.stream()
-				.map(u -> u.idUsuario).collect(Collectors.toList());
+		Set<Integer> idsUsuariosRetornados = resultados.stream()
+				.map(r -> r.idUsuario).collect(Collectors.toSet());
+		Set<Integer> idsUsuariosEsperados = usuarios.stream()
+				.map(u -> u.idUsuario).collect(Collectors.toSet());
 		Assertions.assertEquals(idsUsuariosEsperados, idsUsuariosRetornados);
 
 		List<LocalDate> datasPrevistasDevolucaoRetornadas = resultados.stream()

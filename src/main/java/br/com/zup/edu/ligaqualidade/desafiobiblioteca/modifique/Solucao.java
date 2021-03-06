@@ -35,7 +35,9 @@ public class Solucao {
 			Set<DadosUsuario> usuarios, Set<DadosEmprestimo> emprestimos,
 			Set<DadosDevolucao> devolucoes, LocalDate dataParaSerConsideradaNaExpiracao) {
 		
-		EmprestimoHandler emprestimoHandler = new EmprestimoHandler(usuarios, emprestimos, exemplares);
+		EmprestimoHandler emprestimoHandler = new EmprestimoHandler(usuarios, emprestimos, exemplares, dataParaSerConsideradaNaExpiracao, devolucoes);
+
+
 		return emprestimoHandler.concedeEmprestimos();
 	}
 }
