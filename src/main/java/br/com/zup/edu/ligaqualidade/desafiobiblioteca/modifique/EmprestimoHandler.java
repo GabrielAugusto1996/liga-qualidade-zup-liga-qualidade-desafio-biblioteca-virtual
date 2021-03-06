@@ -4,44 +4,43 @@ import br.com.zup.edu.ligaqualidade.desafiobiblioteca.DadosEmprestimo;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.EmprestimoConcedido;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.exceptions.EmprestimoBusinessException;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.exceptions.EmprestimoValidationException;
-import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.exceptions.ExemplarNotFoundException;
-import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.exceptions.UserNotFoundException;
+import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.filters.DadosExemplarFilter;
+import br.com.zup.edu.ligaqualidade.desafiobiblioteca.modifique.filters.DadosUsuarioFilter;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.pronto.DadosExemplar;
 import br.com.zup.edu.ligaqualidade.desafiobiblioteca.pronto.DadosUsuario;
-import br.com.zup.edu.ligaqualidade.desafiobiblioteca.pronto.TipoExemplar;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-public class EmprestimoHandler {
-    Set<DadosEmprestimo> emprestimos;
-    Set<DadosUsuario> usuarios;
-    Set<DadosExemplar> exemplares;
+import static java.time.LocalDate.now;
 
-    public EmprestimoHandler(Set<DadosUsuario> usuarios, Set<DadosEmprestimo> emprestimos, Set<DadosExemplar> exemplares) {
+public class EmprestimoHandler {
+    final Set<DadosEmprestimo> emprestimos;
+    final Set<DadosUsuario> usuarios;
+    final Set<DadosExemplar> exemplares;
+
+    public EmprestimoHandler(final Set<DadosUsuario> usuarios, final Set<DadosEmprestimo> emprestimos, final Set<DadosExemplar> exemplares) {
         this.usuarios = usuarios;
         this.emprestimos = emprestimos;
         this.exemplares = exemplares;
     }
 
     public Set<EmprestimoConcedido> concedeEmprestimos(){
-        Set<EmprestimoConcedido> emprestimosConcedidos = new HashSet<EmprestimoConcedido>();
+        Set<EmprestimoConcedido> emprestimosConcedidos = new HashSet<>();
 
         emprestimos.forEach((DadosEmprestimo emprestimo) -> {
             try {
-                DadosUsuario usuario = findUser(usuarios, emprestimo.idUsuario);
-                DadosExemplar exemplar = findExemplar(exemplares, emprestimo.idLivro, emprestimo.tipoExemplar);
+                DadosUsuario usuario = DadosUsuarioFilter.findById(usuarios, emprestimo.idUsuario);
+                DadosExemplar exemplar = DadosExemplarFilter.findByIdAndTipoExemplar(exemplares, emprestimo.idLivro, emprestimo.tipoExemplar);
 
                 EmprestimoValidator emprestimoValidator = new EmprestimoValidator(emprestimo, usuario);
                 emprestimoValidator.validate();
 
-                LocalDate dataPrevistaDevolucao = calculateDataPrevistaDevolucao(emprestimo);
+                LocalDate dataPrevistaDevolucao = calculateDataPrevistaDevolucao(emprestimo.tempo);
 
                 emprestimosConcedidos.add(new EmprestimoConcedido(usuario.idUsuario, exemplar.idExemplar, dataPrevistaDevolucao));
-            } catch (EmprestimoValidationException e) {
-                System.out.println(e.getMessage());
-            } catch (EmprestimoBusinessException e) {
+            } catch (EmprestimoValidationException | EmprestimoBusinessException e) {
                 System.out.println(e.getMessage());
             }
         });
@@ -49,26 +48,8 @@ public class EmprestimoHandler {
         return emprestimosConcedidos;
     }
 
-    private DadosUsuario findUser(Set<DadosUsuario> usuarios, Integer idUsuario) throws UserNotFoundException {
-        for(DadosUsuario usuario: usuarios) {
-            if(idUsuario.equals(usuario.idUsuario)) {
-                return usuario;
-            }
-        }
-        throw new UserNotFoundException("User not found");
-    }
-
-    private DadosExemplar findExemplar(Set<DadosExemplar> exemplares, Integer idLivro, TipoExemplar tipoExemplar) throws ExemplarNotFoundException {
-        for(DadosExemplar exemplar: exemplares) {
-            if(idLivro.equals(exemplar.idLivro) && tipoExemplar.equals(exemplar.tipo)) {
-                return exemplar;
-            }
-        }
-        throw new ExemplarNotFoundException("Exemplar not found");
-    }
-
-    private LocalDate calculateDataPrevistaDevolucao(DadosEmprestimo emprestimo) {
-        LocalDate hoje = LocalDate.now();
-        return hoje.plusDays(emprestimo.tempo);
+    private LocalDate calculateDataPrevistaDevolucao(final int tempo) {
+        return now()
+                .plusDays(tempo);
     }
 }
