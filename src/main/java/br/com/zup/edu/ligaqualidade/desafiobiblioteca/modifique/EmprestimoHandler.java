@@ -67,7 +67,7 @@ public class EmprestimoHandler {
         devolucoes.forEach(dadosDevolucao -> emprestimos.forEach(emprestimo -> registrarDevolucao(emprestimosConcedidos, dadosDevolucao, emprestimo)));
     }
 
-    private void registrarDevolucao(Set<EmprestimoConcedido> emprestimosConcedidos, DadosDevolucao dadosDevolucao, DadosEmprestimo emprestimo) {
+    private void registrarDevolucao(final Set<EmprestimoConcedido> emprestimosConcedidos, final DadosDevolucao dadosDevolucao, final DadosEmprestimo emprestimo) {
         final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
                 .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == emprestimo.idPedido)
                 .findFirst()
