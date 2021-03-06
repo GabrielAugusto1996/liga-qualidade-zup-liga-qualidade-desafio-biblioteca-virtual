@@ -38,7 +38,7 @@ public class EmprestimoHandler {
         this.devolucoes = devolucoes;
     }
 
-    public Set<EmprestimoConcedido> concedeEmprestimos(){
+    public Set<EmprestimoConcedido> concedeEmprestimos() {
         Set<EmprestimoConcedido> emprestimosConcedidos = new HashSet<>();
 
         emprestimos.forEach((DadosEmprestimo emprestimo) -> {
@@ -62,21 +62,24 @@ public class EmprestimoHandler {
         return emprestimosConcedidos;
     }
 
-    //TODO: Fazer o filtro de forma correta e melhorar o custo do código (Branch de código)
+    //TODO: Melhorar o custo do código (Branch de código)
     private void devolverLivros(final Set<EmprestimoConcedido> emprestimosConcedidos) {
         for (final DadosDevolucao dadosDevolucao : devolucoes) {
-            final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
-                    .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == dadosEmprestimo.idUsuario)
-                    .findFirst().orElse(null);
-
-            if (nonNull(emprestimoParaDevolver)) {
-                final DadosUsuario usuario = usuarios.stream()
-                        .filter(dadosUsuario -> dadosUsuario.idUsuario == emprestimoParaDevolver.idUsuario)
+            for (final DadosEmprestimo emprestimo : emprestimos) {
+                final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
+                        .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == emprestimo.idPedido)
                         .findFirst()
                         .orElse(null);
 
-                if (nonNull(usuario)){
-                    emprestimoParaDevolver.registraDevolucao();
+                if (nonNull(emprestimoParaDevolver)) {
+                    final DadosUsuario usuario = usuarios.stream()
+                            .filter(dadosUsuario -> dadosUsuario.idUsuario == emprestimoParaDevolver.idUsuario)
+                            .findFirst()
+                            .orElse(null);
+
+                    if (nonNull(usuario)) {
+                        emprestimoParaDevolver.registraDevolucao();
+                    }
                 }
             }
         }
