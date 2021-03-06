@@ -64,23 +64,23 @@ public class EmprestimoHandler {
 
     //TODO: Melhorar o custo do código (Branch de código)
     private void devolverLivros(final Set<EmprestimoConcedido> emprestimosConcedidos) {
-        for (final DadosDevolucao dadosDevolucao : devolucoes) {
-            for (final DadosEmprestimo emprestimo : emprestimos) {
-                final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
-                        .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == emprestimo.idPedido)
-                        .findFirst()
-                        .orElse(null);
+        devolucoes.forEach(dadosDevolucao -> emprestimos.forEach(emprestimo -> registrarDevolucao(emprestimosConcedidos, dadosDevolucao, emprestimo)));
+    }
 
-                if (nonNull(emprestimoParaDevolver)) {
-                    final DadosUsuario usuario = usuarios.stream()
-                            .filter(dadosUsuario -> dadosUsuario.idUsuario == emprestimoParaDevolver.idUsuario)
-                            .findFirst()
-                            .orElse(null);
+    private void registrarDevolucao(Set<EmprestimoConcedido> emprestimosConcedidos, DadosDevolucao dadosDevolucao, DadosEmprestimo emprestimo) {
+        final EmprestimoConcedido emprestimoParaDevolver = emprestimosConcedidos.stream()
+                .filter(dadosEmprestimo -> dadosDevolucao.idEmprestimo == emprestimo.idPedido)
+                .findFirst()
+                .orElse(null);
 
-                    if (nonNull(usuario)) {
-                        emprestimoParaDevolver.registraDevolucao();
-                    }
-                }
+        if (nonNull(emprestimoParaDevolver)) {
+            final DadosUsuario usuario = usuarios.stream()
+                    .filter(dadosUsuario -> dadosUsuario.idUsuario == emprestimoParaDevolver.idUsuario)
+                    .findFirst()
+                    .orElse(null);
+
+            if (nonNull(usuario)) {
+                emprestimoParaDevolver.registraDevolucao();
             }
         }
     }
